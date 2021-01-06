@@ -3,7 +3,7 @@ import { ApolloLink } from 'apollo-link'
 import { HttpLink } from 'apollo-link-http'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 
-const GITHUB_TOKEN = ''
+const GITHUB_TOKEN = '038f5f770e6f94aa4769040926f38123f06a9f0b'
 console.log(GITHUB_TOKEN)
 
 const headersLink = new ApolloLink((operation, forward) => {
