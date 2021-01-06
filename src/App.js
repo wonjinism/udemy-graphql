@@ -14,7 +14,32 @@ const StarButton = props => {
         onClick={
           () => {
             addOrRemoveStar({
-              variables: { input: { starrableId: node.id }} // 얘도 컴포넌트 사용 하는 쪽에서 던져준 props를 사용하는거임.
+              variables: { input: { starrableId: node.id }}, // 얘도 컴포넌트 사용 하는 쪽에서 던져준 props를 사용하는거임.
+              update: (store, { data: { addStar, removeStar }}) => { // response값을 로그로 확인하고 addStar, removeStar 추가함
+                console.log(addStar)
+                console.log(removeStar)
+                const { starrable } = addStar || removeStar
+                const data = store.readQuery({ // 쿼리를 직접 날려서 데이터를 가져오는 것이 아니라 메모리상 데이터를 다시 취득
+                  query: SEARCH_REPOSITORIES,
+                  variables: { query, first, last, after, before }
+                })
+                const edges = data.search.edges
+                const newEdges = edges.map(edge => {
+                  if (edge.node.id === node.id) {
+                    const totalCount = edge.node.stargazers.totalCount
+                    // const diff = viewerHasStarred ? -1 : 1
+                    const diff = starrable.viewerHasStarred ? 1 : -1
+                    const newTotalCount = totalCount + diff
+                    edge.node.stargazers.totalCount = newTotalCount
+                  }
+                  return edge
+                })
+                data.search.edge = newEdges
+                store.writeQuery({
+                  query: SEARCH_REPOSITORIES,
+                  data
+                })
+              }
             })          }
         }
       >
@@ -26,22 +51,7 @@ const StarButton = props => {
   return (
     <Mutation 
       mutation={viewerHasStarred ? REMOVE_STAR : ADD_STAR}
-      // refetchQueries={
-      //   [
-      //     {
-      //       query: SEARCH_REPOSITORIES,
-      //       variables: { query, first, last, before, after }
-      //     }
-      //   ]
-      // }
-      refetchQueries={ mutationResult => {
-        return [
-          {
-            query: SEARCH_REPOSITORIES,
-            variables: { query, first, last, before, after }
-          }
-        ]
-      }}
+      
     >
       {
         addOrRemoveStar => <StarStatus addOrRemoveStar={addOrRemoveStar}/> //mutataion을 컴포넌트로 던져줌
