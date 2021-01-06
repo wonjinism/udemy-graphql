@@ -1,19 +1,37 @@
 import React, { Component } from 'react'
-import { ApolloProvider } from 'react-apollo'
-import { Query } from 'react-apollo'
+import { ApolloProvider, Mutation, Query } from 'react-apollo'
 import client from './client'
 import { SEARCH_REPOSITORIES } from './graphql'
+import { ADD_STAR } from './graphql'
 
 const StarButton = props => {
   const node = props.node
   const starCount = node.stargazers.totalCount
   const viewerHasStarred = node.viewerHasStarred
   const starCountUnit = starCount === 1 ? "1 star" : `${starCount} stars`
+  const StarStatus = ({addStar}) => { // mutation 받아서 씀
+    return (
+      <button
+        onClick={
+          () => {
+            addStar({
+              variables: { input: { starrableId: node.id }}
+            })          }
+        }
+      >
+        {starCountUnit} | {viewerHasStarred ? 'starred' : '-'}
+      </button>
+    )
+  }
+
   return (
-    <button>
-      {starCountUnit} | {viewerHasStarred ? 'starred' : '-'}
-    </button>
+    <Mutation mutation={ADD_STAR}>
+      {
+        addStar => <StarStatus addStar={addStar}/> //mutataion을 컴포넌트로 던져줌
+      }
+    </Mutation>
   )
+
 }
 
 const PER_PAGE = 5
