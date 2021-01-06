@@ -1,21 +1,20 @@
 import React, { Component } from 'react'
 import { ApolloProvider, Mutation, Query } from 'react-apollo'
 import client from './client'
-import { SEARCH_REPOSITORIES } from './graphql'
-import { ADD_STAR } from './graphql'
+import { ADD_STAR, REMOVE_STAR, SEARCH_REPOSITORIES } from './graphql'
 
 const StarButton = props => {
   const node = props.node
   const starCount = node.stargazers.totalCount
   const viewerHasStarred = node.viewerHasStarred
   const starCountUnit = starCount === 1 ? "1 star" : `${starCount} stars`
-  const StarStatus = ({addStar}) => { // mutation 받아서 씀
+  const StarStatus = ({addOrRemoveStar}) => { // mutation 받아서 씀
     return (
       <button
         onClick={
           () => {
-            addStar({
-              variables: { input: { starrableId: node.id }}
+            addOrRemoveStar({
+              variables: { input: { starrableId: node.id }} // 얘도 컴포넌트 사용 하는 쪽에서 던져준 props를 사용하는거임.
             })          }
         }
       >
@@ -25,9 +24,9 @@ const StarButton = props => {
   }
 
   return (
-    <Mutation mutation={ADD_STAR}>
+    <Mutation mutation={viewerHasStarred ? REMOVE_STAR : ADD_STAR}>
       {
-        addStar => <StarStatus addStar={addStar}/> //mutataion을 컴포넌트로 던져줌
+        addOrRemoveStar => <StarStatus addOrRemoveStar={addOrRemoveStar}/> //mutataion을 컴포넌트로 던져줌
       }
     </Mutation>
   )
